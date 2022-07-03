@@ -6,7 +6,7 @@ def test_chrono_system_clock():
 
     # Get the time from both c++ and datetime
     date1 = m.test_chrono1()
-    date2 = datetime.datetime.today()
+    date2 = datetime.datetime.now()
 
     # The returned value should be a datetime
     assert isinstance(date1, datetime.datetime)
@@ -25,7 +25,7 @@ def test_chrono_system_clock():
 
 
 def test_chrono_system_clock_roundtrip():
-    date1 = datetime.datetime.today()
+    date1 = datetime.datetime.now()
 
     # Roundtrip the time
     date2 = m.test_chrono2(date1)
@@ -43,8 +43,8 @@ def test_chrono_system_clock_roundtrip():
 def test_chrono_duration_roundtrip():
 
     # Get the difference between two times (a timedelta)
-    date1 = datetime.datetime.today()
-    date2 = datetime.datetime.today()
+    date1 = datetime.datetime.now()
+    date2 = datetime.datetime.now()
     diff = date2 - date1
 
     # Make sure this is a timedelta
@@ -59,8 +59,8 @@ def test_chrono_duration_roundtrip():
 
 def test_chrono_duration_subtraction_equivalence():
 
-    date1 = datetime.datetime.today()
-    date2 = datetime.datetime.today()
+    date1 = datetime.datetime.now()
+    date2 = datetime.datetime.now()
 
     diff = date2 - date1
     cpp_diff = m.test_chrono4(date2, date1)

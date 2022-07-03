@@ -62,7 +62,7 @@ def add_feature_planes(input):
     output = SparseConvNetTensor()
     output.metadata = input[0].metadata
     output.spatial_size = input[0].spatial_size
-    output.features = sum([i.features for i in input])
+    output.features = sum(i.features for i in input)
     return output
 
 def append_tensors(tensors):
@@ -118,15 +118,17 @@ def pad_with_batch_idx(x,idx): #add a batch index to the list of coordinates
     return torch.cat([x,torch.LongTensor(x.size(0),1).fill_(idx)],1)
 
 def batch_location_tensors(location_tensors):
-    a=[]
-    for batch_idx, lt in enumerate(location_tensors):
-        if lt.numel():
-            a.append(pad_with_batch_idx(lt,batch_idx))
+    a = [
+        pad_with_batch_idx(lt, batch_idx)
+        for batch_idx, lt in enumerate(location_tensors)
+        if lt.numel()
+    ]
+
     return torch.cat(a,0)
 
 def prepare_BLInput(l,f):
     with torch.no_grad():
-        n=max([x.size(0) for x in l])
+        n = max(x.size(0) for x in l)
         L=torch.empty(len(l),n,l[0].size(1)).fill_(-1)
         F=torch.zeros(len(l),n,f[0].size(1))
         for i, (ll, ff) in enumerate(zip(l,f)):
@@ -138,10 +140,10 @@ def checkpoint_restore(model, exp_name, use_cuda=True):
     if use_cuda:
         model.cpu()
     epoch = -1
-    f = sorted(glob.glob(exp_name+'/model*epoch*'+'.pth'))
+    f = sorted(glob.glob(f'{exp_name}/model*epoch*.pth'))
     if len(f) > 0:
         checpoint=f[-1]
-        print('Restore from ' + checpoint)
+        print(f'Restore from {checpoint}')
         model.load_state_dict(torch.load(checpoint))
         epoch = int(checpoint[checpoint.find('epoch')+5: checpoint.find('.pth')])
     else:
@@ -184,12 +186,12 @@ def voxelize_pointcloud(xyz,rgb,average=True,accumulate=False):
         rgb_out.index_add_(0,inv,rgb)
         if average:
             rgb=rgb_out/torch.from_numpy(counts[:,None]).float()
-        return xyz, rgb
     else:
         xyz,idxs=np.unique(xyz,axis=0,return_index=True)
         xyz=torch.from_numpy(xyz)
         rgb=rgb[idxs]
-        return xyz, rgb
+
+    return xyz, rgb
 
 class checkpointFunction(torch.autograd.Function):
     @staticmethod
@@ -248,7 +250,6 @@ def matplotlib_cubes(ax, positions):
         ax.add_collection3d(Poly3DCollection(X))
     except:
         print('matplotlibcubes fail!?!')
-        pass
     ax.set_axis_off()
 def matplotlib_planes(ax, positions,colors):
     from mpl_toolkits.mplot3d import Axes3D

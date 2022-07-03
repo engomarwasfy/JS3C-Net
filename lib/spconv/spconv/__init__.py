@@ -74,7 +74,7 @@ class SparseConvTensor(object):
         if not channels_first:
             return res
         ndim = len(self.spatial_shape)
-        trans_params = list(range(0, ndim + 1))
+        trans_params = list(range(ndim + 1))
         trans_params.insert(1, ndim + 1)
         return res.permute(*trans_params).contiguous()
 

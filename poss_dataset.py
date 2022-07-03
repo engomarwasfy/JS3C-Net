@@ -65,12 +65,14 @@ class get_dataset(Dataset):
 
         for sequence in SPLIT_SEQUENCES[split]:
             complete_path = os.path.join(config['GENERAL']['dataset_dir'], "sequences", sequence, "voxels")
-            if not os.path.exists(complete_path): raise RuntimeError("Voxel directory missing: " + complete_path)
+            if not os.path.exists(complete_path):
+                raise RuntimeError(f"Voxel directory missing: {complete_path}")
 
             files = os.listdir(complete_path)
             for ext in SPLIT_FILES[split]:
                 comletion_data = sorted([os.path.join(complete_path, f) for f in files if f.endswith(ext)])
-                if len(comletion_data) == 0: raise RuntimeError("Missing data for " + EXT_TO_NAME[ext])
+                if len(comletion_data) == 0:
+                    raise RuntimeError(f"Missing data for {EXT_TO_NAME[ext]}")
                 self.files[EXT_TO_NAME[ext]].extend(comletion_data)
 
             self.filenames.extend(
@@ -95,7 +97,7 @@ class get_dataset(Dataset):
         self.seg_remap_lut = seg_remap_lut
 
         # sanity check:
-        for k, v in self.files.items():
+        for v in self.files.values():
             # print(k, len(v))
             assert (len(v) == self.num_files)
 
@@ -125,14 +127,8 @@ class get_dataset(Dataset):
     def __getitem__(self, t):
         """ fill dictionary with available data for given index. """
         '''Load Completion Data'''
-        completion_collection = {}
-        if self.augment:
-            # stat = np.random.randint(0,6)
-            stat = np.random.randint(0,4)
-        else:
-            stat = 0 # set 0 with no augment
-        completion_collection['stat'] = stat
-
+        stat = np.random.randint(0,4) if self.augment else 0
+        completion_collection = {'stat': stat}
         # read raw data and unpack (if necessary)
         for typ in self.files.keys():
             if typ == "label":
@@ -162,25 +158,29 @@ class get_dataset(Dataset):
             feature = remissions.reshape(-1, 1)
 
         '''Process Segmentation Data'''
-        segmentation_collection = {}
         coords, label, feature, idxs = self.process_seg_data(xyz, label, feature)
-        segmentation_collection.update({
-            'coords': coords,
-            'label': label,
-            'feature': feature,
-        })
+        segmentation_collection = dict(
+            {
+                'coords': coords,
+                'label': label,
+                'feature': feature,
+            }
+        )
 
         '''Generate Alignment Data'''
-        aliment_collection = {}
         xyz = xyz[idxs]
         voxels, coords, num_points_per_voxel = self.voxel_generator.generate(np.concatenate([xyz, np.arange(len(xyz)).reshape(-1,1)],-1))
-        voxel_centers = (coords[:, ::-1] + 0.5) * self.voxel_generator.voxel_size + self.voxel_generator.point_cloud_range[0:3]
-        aliment_collection.update({
+        voxel_centers = (
+            (coords[:, ::-1] + 0.5) * self.voxel_generator.voxel_size
+            + self.voxel_generator.point_cloud_range[:3]
+        )
+
+        aliment_collection = {} | {
             'voxels': voxels,
             'coords': coords,
             'voxel_centers': voxel_centers,
             'num_points_per_voxel': num_points_per_voxel,
-        })
+        }
 
         return self.filenames[t], completion_collection, aliment_collection, segmentation_collection
 
@@ -213,21 +213,11 @@ class get_dataset(Dataset):
 def data_augmentation(t, state, inverse=False):
     assert t.dim() == 4, 'input dimension should be 4!'
     if state == 1:
-        aug_t = t.flip([1])
+        return t.flip([1])
     elif state == 2:
-        aug_t = t.flip([2])
-    # elif state == 3:
-    #     k = 1 if not inverse else 3
-    #     aug_t = t.rot90(k, [1, 2])
-    # elif state == 4:
-    #     aug_t = t.rot90(2, [1, 2])
-    # elif state == 5:
-    #     k = 3 if not inverse else 1
-    #     aug_t = t.rot90(k, [1, 2])
+        return t.flip([2])
     else:
-        aug_t = t
-
-    return aug_t
+        return t
 
 def sparse_tensor_augmentation(st, states):
     spatial_shape = st.spatial_shape
@@ -240,9 +230,9 @@ def sparse_tensor_augmentation(st, states):
     features = t.permute(0, 2, 3, 4, 1).reshape(-1, channels)
     features = features[torch.sum(torch.abs(features), dim=1).nonzero(), :]
     features = features.squeeze(1)
-    nst = spconv.SparseConvTensor(features.float(), coords.int(), spatial_shape, batch_size)
-
-    return nst
+    return spconv.SparseConvTensor(
+        features.float(), coords.int(), spatial_shape, batch_size
+    )
 
 def tensor_augmentation(st, states):
     batch_size = st.shape[0]

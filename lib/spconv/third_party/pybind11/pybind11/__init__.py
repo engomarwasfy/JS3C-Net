@@ -6,23 +6,19 @@ def get_include(user=False):
     import os
     import sys
 
-    # Are we running in a virtual environment?
-    virtualenv = hasattr(sys, 'real_prefix') or \
-        sys.prefix != getattr(sys, "base_prefix", sys.prefix)
+    if virtualenv := hasattr(sys, 'real_prefix') or sys.prefix != getattr(
+        sys, "base_prefix", sys.prefix
+    ):
+        return os.path.join(sys.prefix, 'include', 'site', f'python{sys.version[:3]}')
+    dist = Distribution({'name': 'pybind11'})
+    dist.parse_config_files()
 
-    if virtualenv:
-        return os.path.join(sys.prefix, 'include', 'site',
-                            'python' + sys.version[:3])
-    else:
-        dist = Distribution({'name': 'pybind11'})
-        dist.parse_config_files()
+    dist_cobj = dist.get_command_obj('install', create=True)
 
-        dist_cobj = dist.get_command_obj('install', create=True)
+    # Search for packages in user's home directory?
+    if user:
+        dist_cobj.user = user
+        dist_cobj.prefix = ""
+    dist_cobj.finalize_options()
 
-        # Search for packages in user's home directory?
-        if user:
-            dist_cobj.user = user
-            dist_cobj.prefix = ""
-        dist_cobj.finalize_options()
-
-        return os.path.dirname(dist_cobj.install_headers)
+    return os.path.dirname(dist_cobj.install_headers)

@@ -48,10 +48,10 @@ class SubmanifoldConvolution(Module):
         if self.filter_size.max() == self.filter_size.min():
             s = s + str(self.filter_size[0].item())
         else:
-            s = s + '(' + str(self.filter_size[0].item())
+            s = f'{s}({str(self.filter_size[0].item())}'
             for i in self.filter_size[1:]:
-                s = s + ',' + str(i.item())
-            s = s + ')'
+                s = f'{s},{str(i.item())}'
+            s = f'{s})'
         return s
 
     def input_spatial_size(self, out_size):

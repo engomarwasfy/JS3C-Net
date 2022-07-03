@@ -81,12 +81,9 @@ class OutputLayer(Module):
         self.dimension = dimension
 
     def forward(self, input):
-        output = OutputLayerFunction.apply(
-            self.dimension,
-            input.metadata,
-            input.features
+        return OutputLayerFunction.apply(
+            self.dimension, input.metadata, input.features
         )
-        return output
 
 
 class BLInputLayer(Module):
@@ -152,12 +149,9 @@ class BLOutputLayer(Module):
         self.dimension = dimension
 
     def forward(self, input):
-        output = BLOutputLayerFunction.apply(
-            self.dimension,
-            input.metadata,
-            input.features
+        return BLOutputLayerFunction.apply(
+            self.dimension, input.metadata, input.features
         )
-        return output
 
 
 class InputLayerFunction(Function):

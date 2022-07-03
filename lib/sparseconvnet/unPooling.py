@@ -84,14 +84,14 @@ class UnPooling(Module):
                 self.pool_stride.max() == self.pool_stride.min():
             s = s + str(self.pool_size[0].item()) + '/' + str(self.pool_stride[0].item())
         else:
-            s = s + '(' + str(self.pool_size[0].item())
+            s = f'{s}({str(self.pool_size[0].item())}'
             for i in self.pool_size[1:]:
-                s = s + ',' + str(i)
-            s = s + ')/(' + str(self.pool_stride[0].item())
+                s = f'{s},{str(i)}'
+            s = f'{s})/({str(self.pool_stride[0].item())}'
             for i in self.pool_stride[1:]:
-                s = s + ',' + str(i)
-            s = s + ')'
+                s = f'{s},{str(i)}'
+            s = f'{s})'
 
         if self.nFeaturesToDrop > 0:
-            s = s + ' nFeaturesToDrop = ' + self.nFeaturesToDrop
+            s = f'{s} nFeaturesToDrop = {self.nFeaturesToDrop}'
         return s

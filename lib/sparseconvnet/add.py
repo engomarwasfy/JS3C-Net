@@ -9,8 +9,7 @@ from .sparseConvNetTensor import SparseConvNetTensor
 
 def Add_fun(input1, input2):
     '''input1 and input2 has the same positions'''
-    output = add_feature_planes([input1, input2])
-    return output
+    return add_feature_planes([input1, input2])
 
 def Add2_fun(input1, input2):
     '''output position is the same as input2'''

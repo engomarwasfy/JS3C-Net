@@ -202,46 +202,49 @@ def test_no_mixed_overloads():
 
     with pytest.raises(RuntimeError) as excinfo:
         m.ExampleMandA.add_mixed_overloads1()
-    assert (str(excinfo.value) ==
-            "overloading a method with both static and instance methods is not supported; " +
-            ("compile.sh in debug mode for more details" if not debug_enabled else
-             "error while attempting to bind static method ExampleMandA.overload_mixed1"
-             "(arg0: float) -> str")
-            )
+    assert str(excinfo.value) == (
+        "overloading a method with both static and instance methods is not supported; "
+        + (
+            "error while attempting to bind static method ExampleMandA.overload_mixed1"
+            "(arg0: float) -> str"
+            if debug_enabled
+            else "compile.sh in debug mode for more details"
+        )
+    )
+
 
     with pytest.raises(RuntimeError) as excinfo:
         m.ExampleMandA.add_mixed_overloads2()
-    assert (str(excinfo.value) ==
-            "overloading a method with both static and instance methods is not supported; " +
-            ("compile.sh in debug mode for more details" if not debug_enabled else
-             "error while attempting to bind instance method ExampleMandA.overload_mixed2"
-             "(self: pybind11_tests.methods_and_attributes.ExampleMandA, arg0: int, arg1: int)"
-             " -> str")
-            )
+    assert str(excinfo.value) == (
+        "overloading a method with both static and instance methods is not supported; "
+        + (
+            "error while attempting to bind instance method ExampleMandA.overload_mixed2"
+            "(self: pybind11_tests.methods_and_attributes.ExampleMandA, arg0: int, arg1: int)"
+            " -> str"
+            if debug_enabled
+            else "compile.sh in debug mode for more details"
+        )
+    )
 
 
 @pytest.mark.parametrize("access", ["ro", "rw", "static_ro", "static_rw"])
 def test_property_return_value_policies(access):
-    if not access.startswith("static"):
-        obj = m.TestPropRVP()
-    else:
-        obj = m.TestPropRVP
-
-    ref = getattr(obj, access + "_ref")
+    obj = m.TestPropRVP if access.startswith("static") else m.TestPropRVP()
+    ref = getattr(obj, f"{access}_ref")
     assert ref.value == 1
     ref.value = 2
-    assert getattr(obj, access + "_ref").value == 2
+    assert getattr(obj, f"{access}_ref").value == 2
     ref.value = 1  # restore original value for static properties
 
-    copy = getattr(obj, access + "_copy")
+    copy = getattr(obj, f"{access}_copy")
     assert copy.value == 1
     copy.value = 2
-    assert getattr(obj, access + "_copy").value == 1
+    assert getattr(obj, f"{access}_copy").value == 1
 
-    copy = getattr(obj, access + "_func")
+    copy = getattr(obj, f"{access}_func")
     assert copy.value == 1
     copy.value = 2
-    assert getattr(obj, access + "_func").value == 1
+    assert getattr(obj, f"{access}_func").value == 1
 
 
 def test_property_rvalue_policy():

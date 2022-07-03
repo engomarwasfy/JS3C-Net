@@ -19,8 +19,7 @@ class SparseConvNetTensor(object):
         "Coordinates and batch index for the active spatial locations"
         if spatial_size is None:
             spatial_size = self.spatial_size
-        t = self.metadata.getSpatialLocations(spatial_size)
-        return t
+        return self.metadata.getSpatialLocations(spatial_size)
 
     def getLocationsIndexInRef(self, ref):
         "Get spatial locations index in reference metadata"
@@ -33,8 +32,7 @@ class SparseConvNetTensor(object):
 
     def batch_size(self):
         "Batch size"
-        t = self.metadata.getBatchSize(self.spatial_size)
-        return t
+        return self.metadata.getBatchSize(self.spatial_size)
 
     def extractStructure_(self, ffi, spatial_size, label, subset, kernel_size):
         pass

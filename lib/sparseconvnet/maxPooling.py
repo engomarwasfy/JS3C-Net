@@ -104,14 +104,14 @@ class MaxPooling(Module):
             s = s + str(self.pool_size[0].item()) + \
                 '/' + str(self.pool_stride[0].item())
         else:
-            s = s + '(' + str(self.pool_size[0].item())
+            s = f'{s}({str(self.pool_size[0].item())}'
             for i in self.pool_size[1:]:
-                s = s + ',' + str(i.item())
-            s = s + ')/(' + str(self.pool_stride[0].item())
+                s = f'{s},{str(i.item())}'
+            s = f'{s})/({str(self.pool_stride[0].item())}'
             for i in self.pool_stride[1:]:
-                s = s + ',' + str(i.item())
-            s = s + ')'
+                s = f'{s},{str(i.item())}'
+            s = f'{s})'
 
         if self.nFeaturesToDrop > 0:
-            s = s + ' nFeaturesToDrop = ' + self.nFeaturesToDrop
+            s = f'{s} nFeaturesToDrop = {self.nFeaturesToDrop}'
         return s

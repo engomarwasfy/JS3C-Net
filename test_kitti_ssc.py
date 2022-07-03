@@ -38,11 +38,14 @@ print('Load Model...')
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 model_path = args.log_dir
 
-output_dir = model_path + '/dump/'
+output_dir = f'{model_path}/dump/'
 if not os.path.exists(output_dir): os.mkdir(output_dir)
-output_dir = output_dir + 'completion'
+output_dir = f'{output_dir}completion'
 if not os.path.exists(output_dir): os.mkdir(output_dir)
-submit_dir = output_dir + '/submit_' + args.dataset + datetime.now().strftime('%Y_%m_%d')
+submit_dir = f'{output_dir}/submit_{args.dataset}' + datetime.now().strftime(
+    '%Y_%m_%d'
+)
+
 if not os.path.exists(submit_dir): os.mkdir(submit_dir)
 
 use_cuda = torch.cuda.is_available()
@@ -127,7 +130,11 @@ if use_cuda:
 classifier = classifier.eval()
 
 scn.checkpoint_restore(classifier, model_path, use_cuda)
-print('#classifer parameters %d' % sum([x.nelement() for x in classifier.parameters()]))
+print(
+    '#classifer parameters %d'
+    % sum(x.nelement() for x in classifier.parameters())
+)
+
 
 dataset = importlib.import_module('kitti_dataset')
 input_data = kitti_dataset.get_dataset(config, split = args.dataset)
@@ -142,7 +149,7 @@ data_loader = torch.utils.data.DataLoader(
     worker_init_fn=lambda x: np.random.seed(x + int(time.time()))
 )
 num_sample = len(data_loader)
-print("# files: {}".format(num_sample))
+print(f"# files: {num_sample}")
 
 with torch.no_grad():
     for idx, batch in tqdm(enumerate(data_loader), total=len(data_loader)):
@@ -150,10 +157,17 @@ with torch.no_grad():
         start = time.time()
         sequence, filename = batch[2][0]
         os.makedirs(os.path.join(submit_dir, 'sequences', sequence, 'predictions'), exist_ok=True)
-        full_save_dir = os.path.join(submit_dir, 'sequences', sequence, 'predictions', filename + '.label')
+        full_save_dir = os.path.join(
+            submit_dir,
+            'sequences',
+            sequence,
+            'predictions',
+            f'{filename}.label',
+        )
+
 
         if os.path.exists(full_save_dir):
-            print('%s already exsist...' % (full_save_dir))
+            print(f'{full_save_dir} already exsist...')
             continue
 
         seg_pred, complet_pred= classifier(batch)

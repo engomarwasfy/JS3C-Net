@@ -11,9 +11,13 @@ with pytest.suppress(ImportError):
 @pytest.fixture(scope='module')
 def simple_dtype():
     ld = np.dtype('longdouble')
-    return np.dtype({'names': ['bool_', 'uint_', 'float_', 'ldbl_'],
-                     'formats': ['?', 'u4', 'f4', 'f{}'.format(ld.itemsize)],
-                     'offsets': [0, 4, 8, (16 if ld.alignment > 4 else 12)]})
+    return np.dtype(
+        {
+            'names': ['bool_', 'uint_', 'float_', 'ldbl_'],
+            'formats': ['?', 'u4', 'f4', f'f{ld.itemsize}'],
+            'offsets': [0, 4, 8, (16 if ld.alignment > 4 else 12)],
+        }
+    )
 
 
 @pytest.fixture(scope='module')
@@ -98,17 +102,24 @@ def test_dtype(simple_dtype):
     assert m.print_dtypes() == [
         simple_dtype_fmt(),
         packed_dtype_fmt(),
-        "[('a', {}), ('b', {})]".format(simple_dtype_fmt(), packed_dtype_fmt()),
+        f"[('a', {simple_dtype_fmt()}), ('b', {packed_dtype_fmt()})]",
         partial_dtype_fmt(),
         partial_nested_fmt(),
         "[('a', 'S3'), ('b', 'S3')]",
-        ("{{'names':['a','b','c','d'], " +
-         "'formats':[('S4', (3,)),('" + e + "i4', (2,)),('u1', (3,)),('" + e + "f4', (4, 2))], " +
-         "'offsets':[0,12,20,24], 'itemsize':56}}").format(e=e),
+        (
+            "{{'names':['a','b','c','d'], "
+            + "'formats':[('S4', (3,)),('"
+            + e
+            + "i4', (2,)),('u1', (3,)),('"
+            + e
+            + "f4', (4, 2))], "
+            + "'offsets':[0,12,20,24], 'itemsize':56}}"
+        ).format(e=e),
         "[('e1', '" + e + "i8'), ('e2', 'u1')]",
         "[('x', 'i1'), ('y', '" + e + "u8')]",
-        "[('cflt', '" + e + "c8'), ('cdbl', '" + e + "c16')]"
+        "[('cflt', '" + e + "c8'), ('cdbl', '" + e + "c16')]",
     ]
+
 
     d1 = np.dtype({'names': ['a', 'b'], 'formats': ['int32', 'float64'],
                    'offsets': [1, 10], 'itemsize': 20})
@@ -238,7 +249,7 @@ def test_enum_array():
 
     arr = m.create_enum_array(3)
     dtype = arr.dtype
-    assert dtype == np.dtype([('e1', e + 'i8'), ('e2', 'u1')])
+    assert dtype == np.dtype([('e1', f'{e}i8'), ('e2', 'u1')])
     assert m.print_enum_array(arr) == [
         "e1=A,e2=X",
         "e1=B,e2=Y",
@@ -255,7 +266,7 @@ def test_complex_array():
 
     arr = m.create_complex_array(3)
     dtype = arr.dtype
-    assert dtype == np.dtype([('cflt', e + 'c8'), ('cdbl', e + 'c16')])
+    assert dtype == np.dtype([('cflt', f'{e}c8'), ('cdbl', f'{e}c16')])
     assert m.print_complex_array(arr) == [
         "c:(0,0.25),(0.5,0.75)",
         "c:(1,1.25),(1.5,1.75)",

@@ -24,18 +24,29 @@ setup(
     author='Facebook AI Research',
     author_email='benjamingraham@fb.com',
     url='https://github.com/facebookresearch/SparseConvNet',
-    packages=['sparseconvnet','sparseconvnet.SCN'],
+    packages=['sparseconvnet', 'sparseconvnet.SCN'],
     ext_modules=[
-      CUDAExtension('sparseconvnet.SCN',
-        [
-         'sparseconvnet/SCN/cuda.cu', 'sparseconvnet/SCN/sparseconvnet_cuda.cpp', 'sparseconvnet/SCN/pybind.cpp'],
-        include_dirs=[conda_include_dir, this_dir+'/sparseconvnet/SCN/'],
-        extra_compile_args=extra)
-      if torch.cuda.is_available()  else
-      CppExtension('sparseconvnet.SCN',
-        ['sparseconvnet/SCN/pybind.cpp', 'sparseconvnet/SCN/sparseconvnet_cpu.cpp'],
-        include_dirs=[conda_include_dir, this_dir+'/sparseconvnet/SCN/'],
-        extra_compile_args=extra['cxx'])],
+        CUDAExtension(
+            'sparseconvnet.SCN',
+            [
+                'sparseconvnet/SCN/cuda.cu',
+                'sparseconvnet/SCN/sparseconvnet_cuda.cpp',
+                'sparseconvnet/SCN/pybind.cpp',
+            ],
+            include_dirs=[conda_include_dir, f'{this_dir}/sparseconvnet/SCN/'],
+            extra_compile_args=extra,
+        )
+        if torch.cuda.is_available()
+        else CppExtension(
+            'sparseconvnet.SCN',
+            [
+                'sparseconvnet/SCN/pybind.cpp',
+                'sparseconvnet/SCN/sparseconvnet_cpu.cpp',
+            ],
+            include_dirs=[conda_include_dir, f'{this_dir}/sparseconvnet/SCN/'],
+            extra_compile_args=extra['cxx'],
+        )
+    ],
     cmdclass={'build_ext': BuildExtension},
     zip_safe=False,
 )

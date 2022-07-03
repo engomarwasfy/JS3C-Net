@@ -32,11 +32,7 @@ class Unet(nn.Module):
 
         norm_fn = functools.partial(nn.BatchNorm1d, eps=1e-4, momentum=0.1)
 
-        if block_residual:
-            block = ResidualBlock
-        else:
-            block = VGGBlock
-
+        block = ResidualBlock if block_residual else VGGBlock
         self.input_conv = spconv.SparseSequential(
             spconv.SubMConv3d(input_dim, m, kernel_size=3, padding=1, bias=False, indice_key='subm1')
         )
@@ -86,9 +82,12 @@ class Unet(nn.Module):
         spatial_shape = data_dict['spatial_shape']
 
         voxel_feats = pointgroup_ops.voxelization(feats, v2p_map, self.config['Segmentation']['mode'])  # (M, C), float, cuda
-        input = spconv.SparseConvTensor(voxel_feats, voxel_locs, spatial_shape, self.config['TRAIN']['batch_size'])
-
-        return input
+        return spconv.SparseConvTensor(
+            voxel_feats,
+            voxel_locs,
+            spatial_shape,
+            self.config['TRAIN']['batch_size'],
+        )
 
 def Merge(tbl):
     seg_coords = []

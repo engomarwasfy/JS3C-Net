@@ -34,7 +34,7 @@ class DenseToSparse(Module):
         return output
 
     def __repr__(self):
-        return 'DenseToSparse(' + str(self.dimension) + ')'
+        return f'DenseToSparse({str(self.dimension)})'
 
     def input_spatial_size(self, out_size):
         return out_size
@@ -51,7 +51,7 @@ class DenseToSparseFunction(Function):
         aa = input.permute(
             *([0, ] + list(range(2, 2 + dimension)) + [1, ])).clone()
         ctx.aas = aa.size()
-        nz = aa.abs().sum(dimension + 1).view(aa.size()[0:-1])
+        nz = aa.abs().sum(dimension + 1).view(aa.size()[:-1])
         s = torch.LongTensor(nz.stride()).view(1, dimension + 1)
         nz = nz.nonzero()
         s = s.type_as(nz)

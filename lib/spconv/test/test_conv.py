@@ -34,15 +34,19 @@ class SparseConv3dTestTorch(nn.Module):
                 padding=padding,
                 dilation=dilation,
                 bias=False)]
-        for i in range(1, num_layers):
-            layers.append(spconv.SparseConv3d(
+        layers.extend(
+            spconv.SparseConv3d(
                 out_channels,
                 out_channels,
                 kernel_size,
                 stride,
                 padding=padding,
                 dilation=dilation,
-                bias=False))
+                bias=False,
+            )
+            for _ in range(1, num_layers)
+        )
+
         self.net = spconv.SparseSequential(
             *layers,
         )
@@ -67,15 +71,19 @@ class SubMConv3dTestTorch(nn.Module):
                 padding=padding,
                 dilation=dilation,
                 bias=False)]
-        for i in range(1, num_layers):
-            layers.append(spconv.SubMConv3d(
+        layers.extend(
+            spconv.SubMConv3d(
                 out_channels,
                 out_channels,
                 kernel_size,
                 stride,
                 padding=padding,
                 dilation=dilation,
-                bias=False))
+                bias=False,
+            )
+            for _ in range(1, num_layers)
+        )
+
         self.net = spconv.SparseSequential(
             *layers,
         )
@@ -100,15 +108,19 @@ class Conv3dTestTorch(nn.Module):
                 padding=padding,
                 dilation=dilation,
                 bias=False)]
-        for i in range(1, num_layers):
-            layers.append(nn.Conv3d(
+        layers.extend(
+            nn.Conv3d(
                 out_channels,
                 out_channels,
                 kernel_size,
                 stride,
                 padding=padding,
                 dilation=dilation,
-                bias=False))
+                bias=False,
+            )
+            for _ in range(1, num_layers)
+        )
+
         self.net = nn.Sequential(
             *layers,
         )
@@ -130,15 +142,19 @@ class SparseDeConv3dTestTorch(nn.Module):
                 padding=padding,
                 dilation=dilation,
                 bias=False)]
-        for i in range(1, num_layers):
-            layers.append(spconv.SparseConvTranspose3d(
+        layers.extend(
+            spconv.SparseConvTranspose3d(
                 out_channels,
                 out_channels,
                 kernel_size,
                 stride,
                 padding=padding,
                 dilation=dilation,
-                bias=False))
+                bias=False,
+            )
+            for _ in range(1, num_layers)
+        )
+
         self.net = spconv.SparseSequential(
             *layers,
         )
@@ -161,15 +177,19 @@ class DeConv3dTestTorch(nn.Module):
                 padding=padding,
                 dilation=dilation,
                 bias=False)]
-        for i in range(1, num_layers):
-            layers.append(nn.ConvTranspose3d(
+        layers.extend(
+            nn.ConvTranspose3d(
                 out_channels,
                 out_channels,
                 kernel_size,
                 stride,
                 padding=padding,
                 dilation=dilation,
-                bias=False))
+                bias=False,
+            )
+            for _ in range(1, num_layers)
+        )
+
         self.net = nn.Sequential(
             *layers,
         )
@@ -186,10 +206,11 @@ class SparseMaxPoolTestTorch(nn.Module):
         layers = [spconv.SparseMaxPool3d(
                 kernel_size,
                 stride, padding, dilation)]
-        for i in range(1, num_layers):
-            layers.append(spconv.SparseMaxPool3d(
-                kernel_size,
-                stride, padding, dilation))
+        layers.extend(
+            spconv.SparseMaxPool3d(kernel_size, stride, padding, dilation)
+            for _ in range(1, num_layers)
+        )
+
         self.net = spconv.SparseSequential(
             *layers,
         )
@@ -207,10 +228,11 @@ class MaxPool3dTestTorch(nn.Module):
         layers = [nn.MaxPool3d(
                 kernel_size,
                 stride, padding, dilation)]
-        for i in range(1, num_layers):
-            layers.append(nn.MaxPool3d(
-                kernel_size,
-                stride, padding, dilation))
+        layers.extend(
+            nn.MaxPool3d(kernel_size, stride, padding, dilation)
+            for _ in range(1, num_layers)
+        )
+
         self.net = nn.Sequential(
             *layers,
         )
@@ -225,9 +247,11 @@ class SubmanifoldConvTestTorch(nn.Module):
         super().__init__()
         layers = [spconv.SubMConv3d(
                 in_channels, out_channels, kernel_size, bias=False, indice_key="subm0")]
-        for i in range(1, num_layers):
-            layers.append(spconv.SubMConv3d(
-                out_channels, out_channels, kernel_size, bias=False))
+        layers.extend(
+            spconv.SubMConv3d(out_channels, out_channels, kernel_size, bias=False)
+            for _ in range(1, num_layers)
+        )
+
         self.net = nn.Sequential(
             *layers,
         )

@@ -15,7 +15,7 @@ from pathlib import Path
 
 LIBTORCH_ROOT = str(Path(torch.__file__).parent)
 
-PYTHON_VERSION = "{}.{}".format(sys.version_info.major, sys.version_info.minor)
+PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
 
 
 class CMakeExtension(Extension):

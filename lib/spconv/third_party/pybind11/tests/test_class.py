@@ -71,19 +71,19 @@ def test_qualname(doc):
 
 def test_inheritance(msg):
     roger = m.Rabbit('Rabbit')
-    assert roger.name() + " is a " + roger.species() == "Rabbit is a parrot"
+    assert f"{roger.name()} is a {roger.species()}" == "Rabbit is a parrot"
     assert m.pet_name_species(roger) == "Rabbit is a parrot"
 
     polly = m.Pet('Polly', 'parrot')
-    assert polly.name() + " is a " + polly.species() == "Polly is a parrot"
+    assert f"{polly.name()} is a {polly.species()}" == "Polly is a parrot"
     assert m.pet_name_species(polly) == "Polly is a parrot"
 
     molly = m.Dog('Molly')
-    assert molly.name() + " is a " + molly.species() == "Molly is a dog"
+    assert f"{molly.name()} is a {molly.species()}" == "Molly is a dog"
     assert m.pet_name_species(molly) == "Molly is a dog"
 
     fred = m.Hamster('Fred')
-    assert fred.name() + " is a " + fred.species() == "Fred is a rodent"
+    assert f"{fred.name()} is a {fred.species()}" == "Fred is a rodent"
 
     assert m.dog_bark(molly) == "Woof!"
 
@@ -175,9 +175,9 @@ def test_operator_new_delete(capture):
         c = m.AliasedHasOpNewDelSize()
         c2 = SubAliased()
     assert capture == (
-        "C new " + sz_noalias + "\n" +
-        "C new " + sz_alias + "\n"
+        ((f"C new {sz_noalias}" + "\n" + "C new ") + sz_alias) + "\n"
     )
+
 
     with capture:
         del a
@@ -198,8 +198,7 @@ def test_operator_new_delete(capture):
         del c2
         pytest.gc_collect()
     assert capture == (
-        "C delete " + sz_noalias + "\n" +
-        "C delete " + sz_alias + "\n"
+        ((f"C delete {sz_noalias}" + "\n" + "C delete ") + sz_alias) + "\n"
     )
 
 

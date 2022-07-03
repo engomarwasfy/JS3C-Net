@@ -67,17 +67,16 @@ def get_indice_pairs(indices,
 
     for d, s in zip(dilation, stride):
         assert any([s == 1, d == 1]), "don't support this."
-    
-    if not subm:
-        if transpose:
-            out_shape = get_deconv_output_size(spatial_shape, ksize, stride, padding,
-                                            dilation, out_padding)
-        else:
-            out_shape = get_conv_output_size(spatial_shape, ksize, stride, padding,
-                                            dilation)
 
-    else:
+    if subm:
         out_shape = spatial_shape
+    elif transpose:
+        out_shape = get_deconv_output_size(spatial_shape, ksize, stride, padding,
+                                        dilation, out_padding)
+    else:
+        out_shape = get_conv_output_size(spatial_shape, ksize, stride, padding,
+                                        dilation)
+
     if grid is None:
         if ndim == 2:
             get_indice_pairs_func = torch.ops.spconv.get_indice_pairs_2d

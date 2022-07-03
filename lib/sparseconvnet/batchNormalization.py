@@ -63,11 +63,15 @@ class BatchNormalization(Module):
         return out_size
 
     def __repr__(self):
-        s = 'BatchNorm(' + str(self.nPlanes) + ',eps=' + str(self.eps) + \
-            ',momentum=' + str(self.momentum) + ',affine=' + str(self.affine)
+        s = (
+            (f'BatchNorm({str(self.nPlanes)},eps={str(self.eps)}' + ',momentum=')
+            + str(self.momentum)
+            + ',affine='
+        ) + str(self.affine)
+
         if self.leakiness > 0:
-            s = s + ',leakiness=' + str(self.leakiness)
-        s = s + ')'
+            s = f'{s},leakiness={str(self.leakiness)}'
+        s = f'{s})'
         return s
 
 
@@ -76,9 +80,18 @@ class BatchNormReLU(BatchNormalization):
         BatchNormalization.__init__(self, nPlanes, eps, momentum, True, 0)
 
     def __repr__(self):
-        s = 'BatchNormReLU(' + str(self.nPlanes) + ',eps=' + str(self.eps) + \
-            ',momentum=' + str(self.momentum) + ',affine=' + str(self.affine) + ')'
-        return s
+        return (
+            (
+                (
+                    f'BatchNormReLU({str(self.nPlanes)},eps={str(self.eps)}'
+                    + ',momentum='
+                )
+                + str(self.momentum)
+                + ',affine='
+            )
+            + str(self.affine)
+            + ')'
+        )
 
 
 class BatchNormLeakyReLU(BatchNormalization):
@@ -86,9 +99,22 @@ class BatchNormLeakyReLU(BatchNormalization):
         BatchNormalization.__init__(self, nPlanes, eps, momentum, True, leakiness)
 
     def __repr__(self):
-        s = 'BatchNormLeakyReLU(' + str(self.nPlanes) + ',eps=' + str(self.eps) + \
-            ',momentum=' + str(self.momentum) + ',affine=' + str(self.affine) + ',leakiness='+str(self.leakiness)+')'
-        return s
+        return (
+            (
+                (
+                    (
+                        f'BatchNormLeakyReLU({str(self.nPlanes)},eps={str(self.eps)}'
+                        + ',momentum='
+                    )
+                    + str(self.momentum)
+                    + ',affine='
+                )
+                + str(self.affine)
+                + ',leakiness='
+            )
+            + str(self.leakiness)
+            + ')'
+        )
 
 class BatchNormalizationFunction(Function):
     @staticmethod
@@ -206,5 +232,4 @@ class MeanOnlyBNLeakyReLU(Module):
         return out_size
 
     def __repr__(self):
-        s = 'MeanOnlyBatchNorm(' + str(self.nPlanes) + ',momentum=' + str(self.momentum) + ',leakiness=' + str(self.leakiness) + ')'
-        return s
+        return f'MeanOnlyBatchNorm({str(self.nPlanes)},momentum={str(self.momentum)},leakiness={str(self.leakiness)})'

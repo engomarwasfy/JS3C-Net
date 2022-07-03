@@ -123,8 +123,7 @@ def test_mixed_local_global():
     m.register_mixed_global()
     m.register_mixed_local()
 
-    a = []
-    a.append(m.MixedGlobalLocal(1))
+    a = [m.MixedGlobalLocal(1)]
     a.append(m.MixedLocalGlobal(2))
     a.append(m.get_mixed_gl(3))
     a.append(m.get_mixed_lg(4))

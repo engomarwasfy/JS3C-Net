@@ -65,11 +65,11 @@ def d(s):
 def sanitize_name(name):
     name = re.sub(r'type-parameter-0-([0-9]+)', r'T\1', name)
     for k, v in CPP_OPERATORS.items():
-        name = name.replace('operator%s' % k, 'operator_%s' % v)
+        name = name.replace(f'operator{k}', f'operator_{v}')
     name = re.sub('<.*>', '', name)
     name = ''.join([ch if ch.isalnum() else '_' for ch in name])
     name = re.sub('_$', '', re.sub('_+', '_', name))
-    return '__doc_' + name
+    return f'__doc_{name}'
 
 
 def process_comment(comment):
@@ -161,10 +161,7 @@ def process_comment(comment):
     in_code_segment = False
     for x in re.split(r'(```)', s):
         if x == '```':
-            if not in_code_segment:
-                result += '```\n'
-            else:
-                result += '\n```\n\n'
+            result += '\n```\n\n' if in_code_segment else '```\n'
             in_code_segment = not in_code_segment
         elif in_code_segment:
             result += x.strip()
@@ -229,26 +226,24 @@ if __name__ == '__main__':
 
     if platform.system() == 'Darwin':
         dev_path = '/Applications/Xcode.app/Contents/Developer/'
-        lib_dir = dev_path + 'Toolchains/XcodeDefault.xctoolchain/usr/lib/'
-        sdk_dir = dev_path + 'Platforms/MacOSX.platform/Developer/SDKs'
-        libclang = lib_dir + 'libclang.dylib'
+        lib_dir = f'{dev_path}Toolchains/XcodeDefault.xctoolchain/usr/lib/'
+        sdk_dir = f'{dev_path}Platforms/MacOSX.platform/Developer/SDKs'
+        libclang = f'{lib_dir}libclang.dylib'
 
         if os.path.exists(libclang):
             cindex.Config.set_library_path(os.path.dirname(libclang))
 
         if os.path.exists(sdk_dir):
             sysroot_dir = os.path.join(sdk_dir, next(os.walk(sdk_dir))[1][0])
-            parameters.append('-isysroot')
-            parameters.append(sysroot_dir)
-
+            parameters.extend(('-isysroot', sysroot_dir))
     for item in sys.argv[1:]:
         if item.startswith('-'):
             parameters.append(item)
         else:
             filenames.append(item)
 
-    if len(filenames) == 0:
-        print('Syntax: %s [.. a list of header files ..]' % sys.argv[0])
+    if not filenames:
+        print(f'Syntax: {sys.argv[0]} [.. a list of header files ..]')
         exit(-1)
 
     print('''/*
@@ -282,7 +277,7 @@ if __name__ == '__main__':
         thr.start()
 
     print('Waiting for jobs to finish ..', file=sys.stderr)
-    for i in range(job_count):
+    for _ in range(job_count):
         job_semaphore.acquire()
 
     name_ctr = 1

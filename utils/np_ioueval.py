@@ -65,8 +65,7 @@ class iouEval:
     tp, fp, fn = self.getStats()
     total_tp = tp.sum()
     total = tp[self.include].sum() + fp[self.include].sum() + 1e-15
-    acc_mean = total_tp / total
-    return acc_mean  # returns "acc mean"
+    return total_tp / total
     
   def get_confusion(self):
     return self.conf_matrix.copy()

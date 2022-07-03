@@ -87,10 +87,14 @@ class VoxelGenerator:
         self._grid_size = grid_size
 
     def generate(self, points, max_voxels=None):
-        res = points_to_voxel(
-            points, self._voxel_size, self._point_cloud_range, self._coor_to_voxelidx,
-            self._max_num_points, max_voxels or self._max_voxels)
-        return res 
+        return points_to_voxel(
+            points,
+            self._voxel_size,
+            self._point_cloud_range,
+            self._coor_to_voxelidx,
+            self._max_num_points,
+            max_voxels or self._max_voxels,
+        ) 
 
 
     @property

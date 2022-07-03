@@ -39,9 +39,7 @@ def _calculate_fan_in_and_fan_out_hwio(tensor):
     else:
         num_input_fmaps = tensor.size(-2)
         num_output_fmaps = tensor.size(-1)
-        receptive_field_size = 1
-        if tensor.dim() > 2:
-            receptive_field_size = tensor[..., 0, 0].numel()
+        receptive_field_size = tensor[..., 0, 0].numel() if tensor.dim() > 2 else 1
         fan_in = num_input_fmaps * receptive_field_size
         fan_out = num_output_fmaps * receptive_field_size
 
@@ -118,16 +116,15 @@ class SparseConvolution(SparseModule):
         indices = input.indices
         spatial_shape = input.spatial_shape
         batch_size = input.batch_size
-        if not self.subm:
-            if self.transposed:
-                out_spatial_shape = ops.get_deconv_output_size(
-                    spatial_shape, self.kernel_size, self.stride, self.padding, self.dilation, self.output_padding)
-            else:
-                out_spatial_shape = ops.get_conv_output_size(
-                    spatial_shape, self.kernel_size, self.stride, self.padding, self.dilation)
-
-        else:
+        if self.subm:
             out_spatial_shape = spatial_shape
+        elif self.transposed:
+            out_spatial_shape = ops.get_deconv_output_size(
+                spatial_shape, self.kernel_size, self.stride, self.padding, self.dilation, self.output_padding)
+        else:
+            out_spatial_shape = ops.get_conv_output_size(
+                spatial_shape, self.kernel_size, self.stride, self.padding, self.dilation)
+
         # input.update_grid(out_spatial_shape)
         # t = time.time()
         if self.conv1x1:
@@ -142,28 +139,26 @@ class SparseConvolution(SparseModule):
             assert datas is not None and self.indice_key is not None
             _, outids, indice_pairs, indice_pair_num, out_spatial_shape = datas
             assert indice_pairs.shape[0] == np.prod(self.kernel_size), "inverse conv must have same kernel size as its couple conv"
+        elif self.indice_key is None or datas is None:
+            outids, indice_pairs, indice_pair_num = ops.get_indice_pairs(
+                indices, batch_size, spatial_shape, self.kernel_size,
+                self.stride, self.padding, self.dilation, self.output_padding, self.subm, self.transposed, grid=input.grid)
+            input.indice_dict[self.indice_key] = (outids, indices, indice_pairs, indice_pair_num, spatial_shape)
         else:
-            if self.indice_key is not None and datas is not None:
-                outids, _, indice_pairs, indice_pair_num, _ = datas
-            else:
-                outids, indice_pairs, indice_pair_num = ops.get_indice_pairs(
-                    indices, batch_size, spatial_shape, self.kernel_size,
-                    self.stride, self.padding, self.dilation, self.output_padding, self.subm, self.transposed, grid=input.grid)
-                input.indice_dict[self.indice_key] = (outids, indices, indice_pairs, indice_pair_num, spatial_shape)
+            outids, _, indice_pairs, indice_pair_num, _ = datas
         if self.subm:
             out_features = Fsp.indice_subm_conv(features, self.weight,
                                               indice_pairs.to(device),
                                               indice_pair_num,
                                               outids.shape[0])
+        elif self.inverse:
+            out_features = Fsp.indice_inverse_conv(features,
+                                        self.weight, indice_pairs.to(device),
+                                        indice_pair_num, outids.shape[0])
         else:
-            if self.inverse:
-                out_features = Fsp.indice_inverse_conv(features,
-                                            self.weight, indice_pairs.to(device),
-                                            indice_pair_num, outids.shape[0])
-            else:
-                out_features = Fsp.indice_conv(features,
-                                            self.weight, indice_pairs.to(device),
-                                            indice_pair_num, outids.shape[0])
+            out_features = Fsp.indice_conv(features,
+                                        self.weight, indice_pairs.to(device),
+                                        indice_pair_num, outids.shape[0])
 
         if self.bias is not None:
             out_features += self.bias

@@ -56,8 +56,7 @@ class PermutohedralSubmanifoldConvolution(Module):
         return output
 
     def __repr__(self):
-        s = 'PermutohedralSubmanifoldConvolution'
-        return s
+        return 'PermutohedralSubmanifoldConvolution'
 
     def input_spatial_size(self, out_size):
         return out_size
