@@ -38,21 +38,24 @@ args = parse_args()
 
 print('Load Model...')
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-model_path = 'log/'+args.log_dir
+model_path = f'log/{args.log_dir}'
 val_reps = args.num_votes
 
-output_dir = model_path + '/dump/'
+output_dir = f'{model_path}/dump/'
 if not os.path.exists(output_dir): os.mkdir(output_dir)
-output_dir = output_dir + 'segmentation'
+output_dir = f'{output_dir}segmentation'
 if not os.path.exists(output_dir): os.mkdir(output_dir)
-submit_dir = output_dir + '/submit_' + args.dataset + datetime.now().strftime('%Y_%m_%d')
+submit_dir = f'{output_dir}/submit_{args.dataset}' + datetime.now().strftime(
+    '%Y_%m_%d'
+)
+
 if not os.path.exists(submit_dir): os.mkdir(submit_dir)
 
 use_cuda = torch.cuda.is_available()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(model_path)
-with open(model_path+'/args.txt', 'r') as f:
+with open(f'{model_path}/args.txt', 'r') as f:
     config = json.load(f)
 print(config)
 
@@ -83,7 +86,11 @@ if use_cuda:
 classifier = classifier.eval()
 
 training_epoch = scn.checkpoint_restore(classifier, model_path, use_cuda)
-print('#classifer parameters %d' % sum([x.nelement() for x in classifier.parameters()]))
+print(
+    '#classifer parameters %d'
+    % sum(x.nelement() for x in classifier.parameters())
+)
+
 
 '''Load Dataset'''
 config_file = os.path.join('opt/semantic-kitti.yaml')
@@ -184,7 +191,7 @@ with torch.no_grad():
         os.makedirs(full_save_dir, exist_ok=True)
         full_label_name = os.path.join(full_save_dir, label_name)
         if os.path.exists(full_label_name) and args.dataset == 'test':
-            print('%s already exsist...' % (label_name))
+            print(f'{label_name} already exsist...')
             continue
         start = time.time()
         batch = process_data(filename, args.dataset)

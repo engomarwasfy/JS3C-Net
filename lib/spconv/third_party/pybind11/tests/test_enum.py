@@ -31,21 +31,23 @@ def test_unscoped_enum():
     assert m.UnscopedEnum.__members__ == \
         {"EOne": m.UnscopedEnum.EOne, "ETwo": m.UnscopedEnum.ETwo}
 
-    assert m.UnscopedEnum.__doc__ == \
+    assert m.UnscopedEnum.__doc__ in [
         '''An unscoped enumeration
 
 Members:
 
   EOne : Docstring for EOne
 
-  ETwo : Docstring for ETwo''' or m.UnscopedEnum.__doc__ == \
+  ETwo : Docstring for ETwo''',
         '''An unscoped enumeration
 
 Members:
 
   ETwo : Docstring for ETwo
 
-  EOne : Docstring for EOne'''
+  EOne : Docstring for EOne''',
+    ]
+
 
     # Unscoped enums will accept ==/!= int comparisons
     y = m.UnscopedEnum.ETwo
@@ -69,7 +71,7 @@ Members:
     assert m.UnscopedEnum.ETwo >= m.UnscopedEnum.EOne
     assert m.UnscopedEnum.ETwo >= 1
     assert not (m.UnscopedEnum.ETwo < m.UnscopedEnum.EOne)
-    assert not (2 < m.UnscopedEnum.EOne)
+    assert m.UnscopedEnum.EOne <= 2
 
 
 def test_scoped_enum():
@@ -78,8 +80,8 @@ def test_scoped_enum():
     assert m.test_scoped_enum(z) == "ScopedEnum::Two"
 
     # Scoped enums will *NOT* accept ==/!= int comparisons (Will always return False)
-    assert not z == 3
-    assert not 3 == z
+    assert z != 3
+    assert z != 3
     assert z != 3
     assert 3 != z
     # Scoped enums will *NOT* accept >, <, >= and <= int comparisons (Will throw exceptions)
@@ -112,21 +114,19 @@ def test_implicit_conversion():
     assert f(first) == 1
 
     assert f(first) == f(first)
-    assert not f(first) != f(first)
+    assert f(first) == f(first)
 
     assert f(first) != f(second)
-    assert not f(first) == f(second)
+    assert f(first) != f(second)
 
     assert f(first) == int(f(first))
-    assert not f(first) != int(f(first))
+    assert f(first) == int(f(first))
 
     assert f(first) != int(f(second))
-    assert not f(first) == int(f(second))
+    assert f(first) != int(f(second))
 
     # noinspection PyDictCreation
-    x = {f(first): 1, f(second): 2}
-    x[f(first)] = 3
-    x[f(second)] = 4
+    x = {f(first): 3, f(second): 4}
     # Hashing test
     assert str(x) == "{EMode.EFirstMode: 3, EMode.ESecondMode: 4}"
 

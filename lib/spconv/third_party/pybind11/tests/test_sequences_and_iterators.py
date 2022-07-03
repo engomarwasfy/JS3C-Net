@@ -15,11 +15,11 @@ def allclose(a_list, b_list, rel_tol=1e-05, abs_tol=0.0):
 def test_generalized_iterators():
     assert list(m.IntPairs([(1, 2), (3, 4), (0, 5)]).nonzero()) == [(1, 2), (3, 4)]
     assert list(m.IntPairs([(1, 2), (2, 0), (0, 3), (4, 5)]).nonzero()) == [(1, 2)]
-    assert list(m.IntPairs([(0, 3), (1, 2), (3, 4)]).nonzero()) == []
+    assert not list(m.IntPairs([(0, 3), (1, 2), (3, 4)]).nonzero())
 
     assert list(m.IntPairs([(1, 2), (3, 4), (0, 5)]).nonzero_keys()) == [1, 3]
     assert list(m.IntPairs([(1, 2), (2, 0), (0, 3), (4, 5)]).nonzero_keys()) == [1]
-    assert list(m.IntPairs([(0, 3), (1, 2), (3, 4)]).nonzero_keys()) == []
+    assert not list(m.IntPairs([(0, 3), (1, 2), (3, 4)]).nonzero_keys())
 
     # __next__ must continue to raise StopIteration
     it = m.IntPairs([(0, 0)]).nonzero()

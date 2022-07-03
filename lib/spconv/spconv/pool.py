@@ -59,15 +59,22 @@ class SparseMaxPool(SparseModule):
         indices = input.indices
         spatial_shape = input.spatial_shape
         batch_size = input.batch_size
-        if not self.subm:
-            out_spatial_shape = ops.get_conv_output_size(
-                spatial_shape, self.kernel_size, self.stride, self.padding, self.dilation)
-        else:
-            out_spatial_shape = spatial_shape
+        out_spatial_shape = (
+            spatial_shape
+            if self.subm
+            else ops.get_conv_output_size(
+                spatial_shape,
+                self.kernel_size,
+                self.stride,
+                self.padding,
+                self.dilation,
+            )
+        )
+
         outids, indice_pairs, indice_pairs_num = ops.get_indice_pairs(
             indices, batch_size, spatial_shape, self.kernel_size,
             self.stride, self.padding, self.dilation, 0, self.subm)
-        
+
         out_features = Fsp.indice_maxpool(features, indice_pairs.to(device),
                                         indice_pairs_num.to(device), outids.shape[0])
         out_tensor = spconv.SparseConvTensor(out_features, outids,

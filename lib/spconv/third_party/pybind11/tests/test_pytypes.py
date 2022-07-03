@@ -84,8 +84,9 @@ def test_bytes(doc):
     assert m.bytes_from_string().decode() == "foo"
     assert m.bytes_from_str().decode() == "bar"
 
-    assert doc(m.bytes_from_str) == "bytes_from_str() -> {}".format(
-        "bytes" if sys.version_info[0] == 3 else "str"
+    assert (
+        doc(m.bytes_from_str)
+        == f'bytes_from_str() -> {"bytes" if sys.version_info[0] == 3 else "str"}'
     )
 
 

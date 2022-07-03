@@ -74,5 +74,8 @@ class SparseToDense(Module):
         return out_size
 
     def __repr__(self):
-        return 'SparseToDense(' + str(self.dimension) + \
-            ',' + str(self.nPlanes) + ')'
+        return (
+            (f'SparseToDense({str(self.dimension)}' + ',')
+            + str(self.nPlanes)
+            + ')'
+        )

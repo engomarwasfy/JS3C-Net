@@ -38,21 +38,21 @@ args = parse_args()
 
 print('Load Model...')
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-model_path = 'log/'+args.log_dir
+model_path = f'log/{args.log_dir}'
 val_reps = args.num_votes
 
-output_dir = model_path + '/dump/'
+output_dir = f'{model_path}/dump/'
 if not os.path.exists(output_dir): os.mkdir(output_dir)
-output_dir = output_dir + 'segmentation_poss'
+output_dir = f'{output_dir}segmentation_poss'
 if not os.path.exists(output_dir): os.mkdir(output_dir)
-submit_dir = output_dir + '/submit_' + datetime.now().strftime('%Y_%m_%d')
+submit_dir = f'{output_dir}/submit_' + datetime.now().strftime('%Y_%m_%d')
 if not os.path.exists(submit_dir): os.mkdir(submit_dir)
 
 use_cuda = torch.cuda.is_available()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(model_path)
-with open(model_path+'/args.txt', 'r') as f:
+with open(f'{model_path}/args.txt', 'r') as f:
     config = json.load(f)
 print(config)
 
@@ -83,7 +83,11 @@ if use_cuda:
 classifier = classifier.eval()
 
 training_epoch = scn.checkpoint_restore(classifier, model_path, use_cuda)
-print('#classifer parameters %d' % sum([x.nelement() for x in classifier.parameters()]))
+print(
+    '#classifer parameters %d'
+    % sum(x.nelement() for x in classifier.parameters())
+)
+
 
 '''Load Dataset'''
 config_file = os.path.join('opt/SemanticPOSS.yaml')

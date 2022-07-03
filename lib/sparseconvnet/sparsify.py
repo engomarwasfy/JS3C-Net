@@ -22,21 +22,20 @@ class SparsifyFCS(Module):
         Module.__init__(self)
         self.dimension = dimension
     def forward(self, input):
-        if input.features.numel():
-            output = SparseConvNetTensor()
-            output.metadata = Metadata(self.dimension)
-            output.spatial_size = input.spatial_size
-            active = input.features[:,0]>0
-            output.features=input.features[active]
-            active=active.type('torch.LongTensor')
-            input.metadata.sparsifyMetadata(
-                output.metadata,
-                input.spatial_size,
-                active.byte(),
-                active.cumsum(0))
-            return output
-        else:
+        if not input.features.numel():
             return input
+        output = SparseConvNetTensor()
+        output.metadata = Metadata(self.dimension)
+        output.spatial_size = input.spatial_size
+        active = input.features[:,0]>0
+        output.features=input.features[active]
+        active=active.type('torch.LongTensor')
+        input.metadata.sparsifyMetadata(
+            output.metadata,
+            input.spatial_size,
+            active.byte(),
+            active.cumsum(0))
+        return output
 
 class FakeGradHardSigmoidFunction(torch.autograd.Function):
     @staticmethod
@@ -51,16 +50,6 @@ class FakeGradHardSigmoidFunction(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         return grad_output
-        x, = ctx.saved_tensors
-        with torch.no_grad():
-            #Either:
-            #y=torch.sigmoid(x) #torch.sigmoid(x/5)?
-            #df = y*(1-y)
-            #Or:
-            df = ((-2<x)*(x<+2)).float()*0.25
-            #
-            grad_input = grad_output*df
-        return grad_input
 class FakeGradHardSigmoid(Module):
     def forward(self, input):
         output = SparseConvNetTensor()

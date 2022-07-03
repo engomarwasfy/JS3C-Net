@@ -29,9 +29,11 @@ def _mean_update(vals, m_vals, t):
         vals = [vals]
     if not isinstance(m_vals, list):
         m_vals = [m_vals]
-    for val, m_val in zip(vals, m_vals):
-        output = t / float(t + 1) * m_val + 1 / float(t + 1) * val
-        outputs.append(output)
+    outputs.extend(
+        t / float(t + 1) * m_val + 1 / float(t + 1) * val
+        for val, m_val in zip(vals, m_vals)
+    )
+
     if len(outputs) == 1:
         outputs = outputs[0]
     return outputs
@@ -93,11 +95,11 @@ class SparseSequential(SparseModule):
 
     def __getitem__(self, idx):
         if not (-len(self) <= idx < len(self)):
-            raise IndexError('index {} is out of range'.format(idx))
+            raise IndexError(f'index {idx} is out of range')
         if idx < 0:
             idx += len(self)
         it = iter(self._modules.values())
-        for i in range(idx):
+        for _ in range(idx):
             next(it)
         return next(it)
 
@@ -121,10 +123,9 @@ class SparseSequential(SparseModule):
                 assert isinstance(input, spconv.SparseConvTensor)
                 self._sparity_dict[k] = input.sparity
                 input = module(input)
+            elif isinstance(input, spconv.SparseConvTensor):
+                if input.indices.shape[0] != 0:
+                    input.features = module(input.features)
             else:
-                if isinstance(input, spconv.SparseConvTensor):
-                    if input.indices.shape[0] != 0:
-                        input.features = module(input.features)
-                else:
-                    input = module(input)
+                input = module(input)
         return input

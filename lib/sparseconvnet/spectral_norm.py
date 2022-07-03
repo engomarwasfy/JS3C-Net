@@ -14,14 +14,16 @@ class SpectralNorm(object):
         self.dim = dim
         self.norm = norm
         if n_power_iterations <= 0:
-            raise ValueError('Expected n_power_iterations to be positive, but '
-                             'got n_power_iterations={}'.format(n_power_iterations))
+            raise ValueError(
+                f'Expected n_power_iterations to be positive, but got n_power_iterations={n_power_iterations}'
+            )
+
         self.n_power_iterations = n_power_iterations
         self.eps = eps
 
     def compute_weight(self, module):
-        weight = getattr(module, self.name + '_orig')
-        u = getattr(module, self.name + '_u')
+        weight = getattr(module, f'{self.name}_orig')
+        u = getattr(module, f'{self.name}_u')
         weight_mat = weight #/ self.norm
         if self.dim != 0:
             # permute dim to front
@@ -44,17 +46,17 @@ class SpectralNorm(object):
     def remove(self, module):
         weight = getattr(module, self.name)
         delattr(module, self.name)
-        delattr(module, self.name + '_u')
-        delattr(module, self.name + '_orig')
+        delattr(module, f'{self.name}_u')
+        delattr(module, f'{self.name}_orig')
         module.register_parameter(self.name, torch.nn.Parameter(weight))
 
     def __call__(self, module, inputs):
         if module.training:
             weight, u = self.compute_weight(module)
             setattr(module, self.name, weight)
-            setattr(module, self.name + '_u', u)
+            setattr(module, f'{self.name}_u', u)
         else:
-            r_g = getattr(module, self.name + '_orig').requires_grad
+            r_g = getattr(module, f'{self.name}_orig').requires_grad
             getattr(module, self.name).detach_().requires_grad_(r_g)
 
     @staticmethod
@@ -65,7 +67,7 @@ class SpectralNorm(object):
 
         u = normalize(weight.new_empty(height).normal_(0, 1), dim=0, eps=fn.eps)
         delattr(module, fn.name)
-        module.register_parameter(fn.name + "_orig", weight)
+        module.register_parameter(f"{fn.name}_orig", weight)
         # We still need to assign weight back as fn.name because all sorts of
         # things may assume that it exists, e.g., when initializing weights.
         # However, we can't directly assign as it could be an nn.Parameter and
@@ -73,7 +75,7 @@ class SpectralNorm(object):
         # buffer, which will cause weight to be included in the state dict
         # and also supports nn.init due to shared storage.
         module.register_buffer(fn.name, weight.data)
-        module.register_buffer(fn.name + "_u", u)
+        module.register_buffer(f"{fn.name}_u", u)
 
         module.register_forward_pre_hook(fn)
         return fn

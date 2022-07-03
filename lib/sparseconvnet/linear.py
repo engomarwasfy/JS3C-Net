@@ -43,9 +43,15 @@ class Linear(Module):
         return output
 
     def __repr__(self):
-        return self.__class__.__name__ + '(' \
-            + 'in_nPlanes=' + str(self.in_nPlanes) \
-            + ', out_nPlanes=' + str(self.out_nPlanes) + ')'
+        return (
+            (
+                (f'{self.__class__.__name__}(' + 'in_nPlanes=')
+                + str(self.in_nPlanes)
+                + ', out_nPlanes='
+            )
+            + str(self.out_nPlanes)
+            + ')'
+        )
 
     def input_spatial_size(self, out_size):
         return out_size

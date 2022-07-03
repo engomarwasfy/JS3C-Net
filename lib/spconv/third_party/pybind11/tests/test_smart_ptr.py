@@ -31,7 +31,10 @@ def test_smart_ptr(capture):
 
     cstats = ConstructorStats.get(m.MyObject1)
     assert cstats.alive() == 0
-    expected_values = ['MyObject1[{}]'.format(i) for i in range(1, 7)] + ['MyObject1[7]'] * 4
+    expected_values = [f'MyObject1[{i}]' for i in range(1, 7)] + [
+        'MyObject1[7]'
+    ] * 4
+
     assert cstats.values() == expected_values
     assert cstats.default_constructions == 0
     assert cstats.copy_constructions == 0

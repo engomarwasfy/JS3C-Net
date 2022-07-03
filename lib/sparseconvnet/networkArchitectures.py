@@ -234,7 +234,7 @@ def UNet(dimension, reps, nPlanes, residual_blocks=False, downsample=[2, 2], lea
                  .add(scn.SubmanifoldConvolution(dimension, a, b, 3, False, groups=groups)))
     def U(nPlanes,n_input_planes=-1): #Recursive function
         m = scn.Sequential()
-        for i in range(reps):
+        for _ in range(reps):
             block(m, n_input_planes if n_input_planes!=-1 else nPlanes[0], nPlanes[0])
             n_input_planes=-1
         if len(nPlanes) > 1:

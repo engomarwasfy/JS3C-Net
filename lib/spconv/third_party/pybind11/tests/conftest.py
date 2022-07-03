@@ -48,9 +48,8 @@ class Output(object):
         b = _strip_and_dedent(other).splitlines()
         if a == b:
             return True
-        else:
-            self.explanation = _make_explanation(a, b)
-            return False
+        self.explanation = _make_explanation(a, b)
+        return False
 
 
 class Unordered(Output):
@@ -60,9 +59,8 @@ class Unordered(Output):
         b = _split_and_sort(other)
         if a == b:
             return True
-        else:
-            self.explanation = _make_explanation(a, b)
-            return False
+        self.explanation = _make_explanation(a, b)
+        return False
 
 
 class Capture(object):
@@ -83,9 +81,8 @@ class Capture(object):
         b = other
         if a == b:
             return True
-        else:
-            self.explanation = a.explanation
-            return False
+        self.explanation = a.explanation
+        return False
 
     def __str__(self):
         return self.out
@@ -123,9 +120,8 @@ class SanitizedString(object):
         b = _strip_and_dedent(other)
         if a == b:
             return True
-        else:
-            self.explanation = _make_explanation(a.splitlines(), b.splitlines())
-            return False
+        self.explanation = _make_explanation(a.splitlines(), b.splitlines())
+        return False
 
 
 def _sanitize_general(s):
@@ -172,10 +168,8 @@ def pytest_assertrepr_compare(op, left, right):
 @contextlib.contextmanager
 def suppress(exception):
     """Suppress the desired exception"""
-    try:
+    with contextlib.suppress(exception):
         yield
-    except exception:
-        pass
 
 
 def gc_collect():
@@ -234,7 +228,7 @@ def _test_import_pybind11():
         import pybind11_tests  # noqa: F401 imported but unused
     except Exception as e:
         print("Failed to import pybind11_tests from pytest:")
-        print("  {}: {}".format(type(e).__name__, e))
+        print(f"  {type(e).__name__}: {e}")
         sys.exit(1)
 
 

@@ -141,7 +141,7 @@ def test_nonunit_stride_from_python():
 
     counting_3d = np.arange(27.0, dtype=np.float32).reshape((3, 3, 3))
     slices = [counting_3d[0, :, :], counting_3d[:, 0, :], counting_3d[:, :, 0]]
-    for slice_idx, ref_mat in enumerate(slices):
+    for ref_mat in slices:
         np.testing.assert_array_equal(m.double_mat_cm(ref_mat), 2.0 * ref_mat)
         np.testing.assert_array_equal(m.double_mat_rm(ref_mat), 2.0 * ref_mat)
 
@@ -170,7 +170,7 @@ def test_negative_stride_from_python(msg):
     counting_3d = np.arange(27.0, dtype=np.float32).reshape((3, 3, 3))
     counting_3d = counting_3d[::-1, ::-1, ::-1]
     slices = [counting_3d[0, :, :], counting_3d[:, 0, :], counting_3d[:, :, 0]]
-    for slice_idx, ref_mat in enumerate(slices):
+    for ref_mat in slices:
         np.testing.assert_array_equal(m.double_mat_cm(ref_mat), 2.0 * ref_mat)
         np.testing.assert_array_equal(m.double_mat_rm(ref_mat), 2.0 * ref_mat)
 
@@ -196,7 +196,7 @@ def test_nonunit_stride_to_python():
     assert np.all(m.diagonal(ref) == ref.diagonal())
     assert np.all(m.diagonal_1(ref) == ref.diagonal(1))
     for i in range(-5, 7):
-        assert np.all(m.diagonal_n(ref, i) == ref.diagonal(i)), "m.diagonal_n({})".format(i)
+        assert np.all(m.diagonal_n(ref, i) == ref.diagonal(i)), f"m.diagonal_n({i})"
 
     assert np.all(m.block(ref, 2, 1, 3, 3) == ref[2:5, 1:4])
     assert np.all(m.block(ref, 1, 4, 4, 2) == ref[1:, 4:])
@@ -207,7 +207,9 @@ def test_eigen_ref_to_python():
     chols = [m.cholesky1, m.cholesky2, m.cholesky3, m.cholesky4]
     for i, chol in enumerate(chols, start=1):
         mymat = chol(np.array([[1., 2, 4], [2, 13, 23], [4, 23, 77]]))
-        assert np.all(mymat == np.array([[1, 0, 0], [2, 3, 0], [4, 5, 6]])), "cholesky{}".format(i)
+        assert np.all(
+            mymat == np.array([[1, 0, 0], [2, 3, 0], [4, 5, 6]])
+        ), f"cholesky{i}"
 
 
 def assign_both(a1, a2, r, c, v):

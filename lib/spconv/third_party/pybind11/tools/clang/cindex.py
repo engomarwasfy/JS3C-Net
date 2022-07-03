@@ -169,10 +169,7 @@ class SourceLocation(Structure):
             f, l, c, o = c_object_p(), c_uint(), c_uint(), c_uint()
             conf.lib.clang_getInstantiationLocation(self, byref(f), byref(l),
                     byref(c), byref(o))
-            if f:
-                f = File(f)
-            else:
-                f = None
+            f = File(f) if f else None
             self._data = (f, int(l.value), int(c.value), int(o.value))
         return self._data
 
@@ -221,10 +218,7 @@ class SourceLocation(Structure):
         return not self.__eq__(other)
 
     def __repr__(self):
-        if self.file:
-            filename = self.file.name
-        else:
-            filename = None
+        filename = self.file.name if self.file else None
         return "<SourceLocation file %r, line %r, column %r>" % (
             filename, self.line, self.column)
 
@@ -466,7 +460,7 @@ class TokenGroup(object):
 
         token_group = TokenGroup(tu, tokens_memory, tokens_count)
 
-        for i in range(0, count):
+        for i in range(count):
             token = Token()
             token.int_data = tokens_array[i].int_data
             token.ptr_data = tokens_array[i].ptr_data
@@ -486,7 +480,7 @@ class TokenKind(object):
         self.name = name
 
     def __repr__(self):
-        return 'TokenKind.%s' % (self.name,)
+        return f'TokenKind.{self.name}'
 
     @staticmethod
     def from_value(value):
@@ -543,10 +537,12 @@ class BaseEnumeration(object):
     def name(self):
         """Get the enumeration name of this cursor kind."""
         if self._name_map is None:
-            self._name_map = {}
-            for key, value in list(self.__class__.__dict__.items()):
-                if isinstance(value, self.__class__):
-                    self._name_map[value] = key
+            self._name_map = {
+                value: key
+                for key, value in list(self.__class__.__dict__.items())
+                if isinstance(value, self.__class__)
+            }
+
         return self._name_map[self]
 
     @classmethod
@@ -556,7 +552,7 @@ class BaseEnumeration(object):
         return cls._kinds[id]
 
     def __repr__(self):
-        return '%s.%s' % (self.__class__, self.name,)
+        return f'{self.__class__}.{self.name}'
 
 
 class CursorKind(BaseEnumeration):
@@ -610,7 +606,7 @@ class CursorKind(BaseEnumeration):
         return conf.lib.clang_isUnexposed(self)
 
     def __repr__(self):
-        return 'CursorKind.%s' % (self.name,)
+        return f'CursorKind.{self.name}'
 
 ###
 # Declaration Kinds

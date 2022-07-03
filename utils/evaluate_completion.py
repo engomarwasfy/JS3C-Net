@@ -43,13 +43,12 @@ def load_gt_volume(filename):
   basename = os.path.os.path.splitext(filename)[0]
 
   labels = np.fromfile(filename, dtype=np.uint16)
-  invalid_voxels = unpack(np.fromfile(basename + ".invalid", dtype=np.uint8))
+  invalid_voxels = unpack(np.fromfile(f"{basename}.invalid", dtype=np.uint8))
 
   return labels, invalid_voxels
 
 def load_pred_volume(filename):
-  labels = np.fromfile(filename, dtype=np.uint16)
-  return labels
+  return np.fromfile(filename, dtype=np.uint16)
 
 # possible splits
 splits = ["train", "valid", "test"]
@@ -99,7 +98,7 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
   print("  ========================== Arguments ==========================  ")
-  print("\n".join(["  {}:\t{}".format(k,v) for (k,v) in vars(args).items()]))
+  print("\n".join([f"  {k}:\t{v}" for (k,v) in vars(args).items()]))
   print("  ===============================================================  \n")
   gt_data_root = args.dataset
 
@@ -144,7 +143,7 @@ if __name__ == "__main__":
   # check that all prediction files exist
   for pred_file in filenames_pred:
     if not os.path.exists(os.path.join(args.predictions, pred_file)):
-      print("Expected to have {}, but file does not exist!".format(pred_file))
+      print(f"Expected to have {pred_file}, but file does not exist!")
       missing_pred_files = True
 
   if missing_pred_files: raise RuntimeError("Error: Missing prediction files! Aborting evaluation.")
@@ -156,7 +155,7 @@ if __name__ == "__main__":
 
   for i, f in enumerate(evaluation_pairs):
     if 100.0 * i / len(evaluation_pairs) >= progress:
-      print("{}% ".format(progress), end="", flush=True)
+      print(f"{progress}% ", end="", flush=True)
       progress = progress + 10
 
     filename_gt = os.path.join(args.dataset, f[0])
@@ -204,13 +203,10 @@ if __name__ == "__main__":
         "mIoU SSC =\t" + str(np.round(mIoU_ssc * 100, 2)))
 
   # write "scores.txt" with all information
-  results = {}
-  results["iou_completion"] = float(acc_cmpltn)
-  results["iou_mean"] = float(mIoU_ssc)
-
+  results = {"iou_completion": float(acc_cmpltn), "iou_mean": float(mIoU_ssc)}
   for i, jacc in enumerate(class_jaccard):
     if i not in ignore:
-      results["iou_"+class_strings[class_inv_remap[i]]] = float(jacc)
+      results[f"iou_{class_strings[class_inv_remap[i]]}"] = float(jacc)
 
   output_filename = os.path.join(args.output, 'scores.txt')
   with open(output_filename, 'w') as yaml_file:

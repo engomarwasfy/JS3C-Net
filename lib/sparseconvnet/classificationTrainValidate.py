@@ -76,7 +76,7 @@ def ClassificationTrainValidate(model, dataset, p):
     else:
         p['epoch'] = 1
     print(p)
-    print('#parameters', sum([x.nelement() for x in model.parameters()]))
+    print('#parameters', sum(x.nelement() for x in model.parameters()))
     for epoch in range(p['epoch'], p['n_epochs'] + 1):
         model.train()
         stats = {}

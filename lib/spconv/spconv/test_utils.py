@@ -31,12 +31,13 @@ class TestCase(unittest.TestCase):
         """
         a = self._GetNdArray(a)
         b = self._GetNdArray(b)
-        self.assertEqual(a.shape, b.shape,
-                         "Shape mismatch: expected %s, got %s." % (a.shape,
-                                                                   b.shape))
+        self.assertEqual(
+            a.shape, b.shape, f"Shape mismatch: expected {a.shape}, got {b.shape}."
+        )
+
         same = (a == b)
 
-        if a.dtype == np.float32 or a.dtype == np.float64:
+        if a.dtype in [np.float32, np.float64]:
             same = np.logical_or(same, np.logical_and(
                 np.isnan(a), np.isnan(b)))
         if not np.all(same):
@@ -74,24 +75,28 @@ class TestCase(unittest.TestCase):
             self.assertCountEqual(
                 a.keys(),
                 b.keys(),
-                msg="mismatched keys, expected %s, got %s" % (a.keys(),
-                                                              b.keys()))
+                msg=f"mismatched keys, expected {a.keys()}, got {b.keys()}",
+            )
+
             for k in a:
                 self._assertArrayLikeAllClose(
                     a[k],
                     b[k],
                     rtol=rtol,
                     atol=atol,
-                    msg="%s: expected %s, got %s." % (k, a, b))
+                    msg=f"{k}: expected {a}, got {b}.",
+                )
+
         else:
             self._assertArrayLikeAllClose(a, b, rtol=rtol, atol=atol)
 
     def _assertArrayLikeAllClose(self, a, b, rtol=1e-6, atol=1e-6, msg=None):
         a = self._GetNdArray(a)
         b = self._GetNdArray(b)
-        self.assertEqual(a.shape, b.shape,
-                         "Shape mismatch: expected %s, got %s." % (a.shape,
-                                                                   b.shape))
+        self.assertEqual(
+            a.shape, b.shape, f"Shape mismatch: expected {a.shape}, got {b.shape}."
+        )
+
         if not np.allclose(a, b, rtol=rtol, atol=atol):
             # Prints more details than np.testing.assert_allclose.
             #
@@ -115,7 +120,7 @@ class TestCase(unittest.TestCase):
             print("not close rhs = ", y)
             print("not close dif = ", np.abs(x - y))
             print("not close tol = ", atol + rtol * np.abs(y))
-            print("dtype = %s, shape = %s" % (a.dtype, a.shape))
+            print(f"dtype = {a.dtype}, shape = {a.shape}")
             np.testing.assert_allclose(a, b, rtol=rtol, atol=atol, err_msg=msg)
 
 def params_grid(*params):
@@ -125,9 +130,7 @@ def params_grid(*params):
         length *= len(p)
     sizes = [len(p) for p in params]
     counter = [0] * size
-    total = []
-    for i in range(length):
-        total.append([0]* size)
+    total = [[0]* size for _ in range(length)]
     for i in range(length):
         for j in range(size):
             total[i][j] = params[j][counter[j]]
@@ -169,11 +172,11 @@ def generate_sparse_data(shape,
             data_range[0], data_range[1], size=[num_points.sum(), num_channels]).astype(dtype)
 
     # sparse_data = np.arange(1, num_points.sum() + 1).astype(np.float32).reshape(5, 1)
-    
-        
+
+
     res =  {
         "features": sparse_data.astype(dtype),
-        
+
     }
     if with_dense:
         dense_data = np.zeros(

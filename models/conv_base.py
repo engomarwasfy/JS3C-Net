@@ -18,16 +18,17 @@ class SharedMLP(nn.Sequential):
 
         for i in range(len(args) - 1):
             self.add_module(
-                name + 'layer{}'.format(i),
+                name + f'layer{i}',
                 Conv2d(
                     args[i],
                     args[i + 1],
                     bn=(not first or not preact or (i != 0)) and bn,
                     activation=activation
-                    if (not first or not preact or (i != 0)) else None,
+                    if (not first or not preact or (i != 0))
+                    else None,
                     preact=preact,
-                    instance_norm=instance_norm
-                )
+                    instance_norm=instance_norm,
+                ),
             )
 
 
@@ -67,44 +68,46 @@ class _ConvBase(nn.Sequential):
             nn.init.constant_(conv_unit.bias, 0)
 
         if bn:
-            if not preact:
-                bn_unit = batch_norm(out_size)
-            else:
-                bn_unit = batch_norm(in_size)
+            bn_unit = batch_norm(in_size) if preact else batch_norm(out_size)
         if instance_norm:
-            if not preact:
-                in_unit = instance_norm_func(out_size, affine=False, track_running_stats=False)
-            else:
-                in_unit = instance_norm_func(in_size, affine=False, track_running_stats=False)
+            in_unit = (
+                instance_norm_func(
+                    in_size, affine=False, track_running_stats=False
+                )
+                if preact
+                else instance_norm_func(
+                    out_size, affine=False, track_running_stats=False
+                )
+            )
 
         if preact:
             if bn:
-                self.add_module(name + 'bn', bn_unit)
+                self.add_module(f'{name}bn', bn_unit)
 
             if activation is not None:
-                self.add_module(name + 'activation', activation)
+                self.add_module(f'{name}activation', activation)
 
             if not bn and instance_norm:
-                self.add_module(name + 'in', in_unit)
+                self.add_module(f'{name}in', in_unit)
 
-        self.add_module(name + 'conv', conv_unit)
+        self.add_module(f'{name}conv', conv_unit)
 
         if not preact:
             if bn:
-                self.add_module(name + 'bn', bn_unit)
+                self.add_module(f'{name}bn', bn_unit)
 
             if activation is not None:
-                self.add_module(name + 'activation', activation)
+                self.add_module(f'{name}activation', activation)
 
             if not bn and instance_norm:
-                self.add_module(name + 'in', in_unit)
+                self.add_module(f'{name}in', in_unit)
 
 
 class _BNBase(nn.Sequential):
 
     def __init__(self, in_size, batch_norm=None, name=""):
         super().__init__()
-        self.add_module(name + "bn", batch_norm(in_size))
+        self.add_module(f"{name}bn", batch_norm(in_size))
 
         nn.init.constant_(self[0].weight, 1.0)
         nn.init.constant_(self[0].bias, 0)
@@ -262,18 +265,18 @@ class FC(nn.Sequential):
 
         if preact:
             if bn:
-                self.add_module(name + 'bn', BatchNorm1d(in_size))
+                self.add_module(f'{name}bn', BatchNorm1d(in_size))
 
             if activation is not None:
-                self.add_module(name + 'activation', activation)
+                self.add_module(f'{name}activation', activation)
 
-        self.add_module(name + 'fc', fc)
+        self.add_module(f'{name}fc', fc)
 
         if not preact:
             if bn:
-                self.add_module(name + 'bn', BatchNorm1d(out_size))
+                self.add_module(f'{name}bn', BatchNorm1d(out_size))
 
             if activation is not None:
-                self.add_module(name + 'activation', activation)
+                self.add_module(f'{name}activation', activation)
 
 

@@ -139,7 +139,7 @@ def main(args):
             return seg_output, complet_output, [self.seg_sigma, self.complet_sigma]
 
     def bn_momentum_adjust(m, momentum):
-        if isinstance(m, torch.nn.BatchNorm2d) or isinstance(m, torch.nn.BatchNorm1d):
+        if isinstance(m, (torch.nn.BatchNorm2d, torch.nn.BatchNorm1d)):
             m.momentum = momentum
 
     classifier = J3SC_Net(args).cuda()

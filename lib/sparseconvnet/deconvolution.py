@@ -67,19 +67,19 @@ class Deconvolution(Module):
         return output
 
     def __repr__(self):
-        s = 'Deconvolution ' + str(self.nIn) + '->' + str(self.nOut) + ' C'
+        s = f'Deconvolution {str(self.nIn)}->{str(self.nOut)} C'
         if self.filter_size.max().item() == self.filter_size.min().item() and\
                 self.filter_stride.max().item() == self.filter_stride.min().item():
             s = s + str(self.filter_size[0].item()) + \
                 '/' + str(self.filter_stride[0].item())
         else:
-            s = s + '(' + str(self.filter_size[0].item())
+            s = f'{s}({str(self.filter_size[0].item())}'
             for i in self.filter_size[1:]:
-                s = s + ',' + str(i.item())
-            s = s + ')/(' + str(self.filter_stride[0].item())
+                s = f'{s},{str(i.item())}'
+            s = f'{s})/({str(self.filter_stride[0].item())}'
             for i in self.filter_stride[1:]:
-                s = s + ',' + str(i.item())
-            s = s + ')'
+                s = f'{s},{str(i.item())}'
+            s = f'{s})'
         return s
 
     def input_spatial_size(self, out_size):

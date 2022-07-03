@@ -18,11 +18,11 @@ def checkpoint_restore(model, exp_name, use_cuda=True, train_from=0):
     if use_cuda:
         model.cpu()
     epoch = -1
-    f = sorted(glob.glob(exp_name + '/model*epoch*' + '.pth'))
+    f = sorted(glob.glob(f'{exp_name}/model*epoch*.pth'))
     # f = sorted(glob.glob(exp_name + '/model_latest' + '.pth'))
     if len(f) > 0:
         checpoint = f[-1]
-        print('Restore from ' + checpoint)
+        print(f'Restore from {checpoint}')
         model.load_state_dict(torch.load(checpoint))
         try:
             epoch = int(checpoint[checpoint.find('epoch') + 5: checpoint.find('.pth')])
@@ -70,8 +70,7 @@ class VoxelPooling(nn.Module):
         tile_center = center_xyz.unsqueeze(1).repeat([1, K, 1])
         offset = group_xyz - tile_center
         dist = torch.norm(offset, p=None, dim=-1, keepdim=True)
-        relation = torch.cat([offset, tile_center, group_xyz, dist], -1)
-        return relation
+        return torch.cat([offset, tile_center, group_xyz, dist], -1)
 
     def forward(self, invoxel_xyz, invoxel_map, src_feat, voxel_center=None):
         device = src_feat.device
@@ -116,7 +115,7 @@ class Loss(nn.Module):
         complt_gt[masks] = 255
 
         loss_complet = 0
-        for id, pred in enumerate(complt_pred): # consider multiple head loss computation
+        for pred in complt_pred:
             complet_label = complt_gt.long()
             loss_complet += torch.nn.functional.cross_entropy(pred, complet_label, weight=complt_w, ignore_index=255)
         loss_complet /= len(complt_pred)
@@ -210,7 +209,7 @@ class interaction_module(nn.Module):
 
 def align_pnt(pnt, voxel_size, pnt_range):
     device = pnt.device
-    pnt_range = torch.Tensor(pnt_range[0:3]).to(device)
+    pnt_range = torch.Tensor(pnt_range[:3]).to(device)
     pnt[:, 1:] = (pnt[:, 1:].float() + 0.5) * voxel_size + pnt_range
 
     return pnt.float()
@@ -229,15 +228,14 @@ def extract_coord_features(t):
 
 
 def pnt2obj(points, file, rgb=False):
-    fout = open('%s.obj' % file, 'w')
-    for i in range(points.shape[0]):
-        if not rgb:
-            fout.write('v %f %f %f %d %d %d\n' % (
-                points[i, 0], points[i, 1], points[i, 2], 255, 255, 0))
-        else:
-            fout.write('v %f %f %f %d %d %d\n' % (
-                points[i, 0], points[i, 1], points[i, 2], points[i, -3]*255, points[i, -2]*255, points[i, -1]*255))
-    fout.close()
+    with open(f'{file}.obj', 'w') as fout:
+        for i in range(points.shape[0]):
+            if not rgb:
+                fout.write('v %f %f %f %d %d %d\n' % (
+                    points[i, 0], points[i, 1], points[i, 2], 255, 255, 0))
+            else:
+                fout.write('v %f %f %f %d %d %d\n' % (
+                    points[i, 0], points[i, 1], points[i, 2], points[i, -3]*255, points[i, -2]*255, points[i, -1]*255))
 
 
 class PixelShuffle3D(nn.Module):
@@ -366,7 +364,13 @@ class UBlock(nn.Module):
 
         self.nPlanes = nPlanes
 
-        blocks = {'block{}'.format(i): block(nPlanes[0], nPlanes[0], norm_fn, indice_key='subm{}'.format(indice_key_id)) for i in range(block_reps)}
+        blocks = {
+            f'block{i}': block(
+                nPlanes[0], nPlanes[0], norm_fn, indice_key=f'subm{indice_key_id}'
+            )
+            for i in range(block_reps)
+        }
+
         blocks = OrderedDict(blocks)
         self.blocks = spconv.SparseSequential(blocks)
 
@@ -374,20 +378,43 @@ class UBlock(nn.Module):
             self.conv = spconv.SparseSequential(
                 norm_fn(nPlanes[0]),
                 nn.ReLU(),
-                spconv.SparseConv3d(nPlanes[0], nPlanes[1], kernel_size=2, stride=2, padding=1, bias=False, indice_key='spconv{}'.format(indice_key_id))
+                spconv.SparseConv3d(
+                    nPlanes[0],
+                    nPlanes[1],
+                    kernel_size=2,
+                    stride=2,
+                    padding=1,
+                    bias=False,
+                    indice_key=f'spconv{indice_key_id}',
+                ),
             )
+
 
             self.u = UBlock(nPlanes[1:], norm_fn, block_reps, block, indice_key_id=indice_key_id+1)
 
             self.deconv = spconv.SparseSequential(
                 norm_fn(nPlanes[1]),
                 nn.ReLU(),
-                spconv.SparseInverseConv3d(nPlanes[1], nPlanes[0], kernel_size=2, bias=False, indice_key='spconv{}'.format(indice_key_id))
+                spconv.SparseInverseConv3d(
+                    nPlanes[1],
+                    nPlanes[0],
+                    kernel_size=2,
+                    bias=False,
+                    indice_key=f'spconv{indice_key_id}',
+                ),
             )
 
-            blocks_tail = {}
-            for i in range(block_reps):
-                blocks_tail['block{}'.format(i)] = block(nPlanes[0] * (2 - i), nPlanes[0], norm_fn, indice_key='subm{}'.format(indice_key_id))
+
+            blocks_tail = {
+                f'block{i}': block(
+                    nPlanes[0] * (2 - i),
+                    nPlanes[0],
+                    norm_fn,
+                    indice_key=f'subm{indice_key_id}',
+                )
+                for i in range(block_reps)
+            }
+
             blocks_tail = OrderedDict(blocks_tail)
             self.blocks_tail = spconv.SparseSequential(blocks_tail)
 
