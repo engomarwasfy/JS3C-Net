@@ -24,7 +24,7 @@ def get_parser():
     args_cfg = parser.parse_args()
     assert args_cfg.config is not None
     with open(args_cfg.config, 'r') as f:
-        config = yaml.load(f)
+        config = yaml.full_load(f)
     config['gpu'] = args_cfg.gpu
     config['config'] = args_cfg.config
     config['log_dir'] = args_cfg.log_dir

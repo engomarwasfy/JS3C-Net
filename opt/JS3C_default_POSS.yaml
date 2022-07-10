@@ -1,7 +1,7 @@
 GENERAL:
   task: train  # train, test
   manual_seed: 123
-  dataset_dir: /home/gjt/SemanticPOSS/dataset/
+  dataset_dir: /media/wasfy/One\ Touch/TA/drive/All/omarwasfy/Master/Thesis/Datasets/dataset/
   debug: False
 
 DATA:
